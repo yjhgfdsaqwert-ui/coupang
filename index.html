@@ -36,7 +36,7 @@
             resize: vertical;
         }
 
-        /* 3번째 칸 */
+        /* 4번째 칸 - HTML */
         .fixed-content {
             width: 100%;
             height: 800px;
@@ -49,6 +49,18 @@
             white-space: pre-wrap;
             overflow: auto;
         }
+
+        /* 신청 버튼 */
+        .submit-button {
+            width: 100%;
+            margin-top: 20px;
+            padding: 18px;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            border: none;
+            border-radius: 8px;
+        }
     </style>
 </head>
 
@@ -58,17 +70,23 @@
 
         <!-- 1번째 칸 -->
         <div class="box">
+            <div class="title">주소:</div>
+            <textarea placeholder="주소를 입력하세요"></textarea>
+        </div>
+
+        <!-- 2번째 칸 -->
+        <div class="box">
             <div class="title">상품 링크:</div>
             <textarea placeholder="쿠팡의 상품 링크를 입력하세요"></textarea>
         </div>
 
-        <!-- 2번째 칸 -->
+        <!-- 3번째 칸 -->
         <div class="box">
             <div class="title">코드:</div>
             <textarea placeholder="쿠팡 기프트 카드 코드를 입력하세요"></textarea>
         </div>
 
-        <!-- 3번째 칸 -->
+        <!-- 4번째 칸 -->
         <div class="box">
             <div class="title">HTML:</div>
 
@@ -87,15 +105,32 @@
 <h1>주의사항</h1>
 상품 링크 입력 란에는 쿠팡의 상품 URL을 넣어주셔야 합니다.
 코드 란에는 편의점에서 구매 할 수 있는 쿠팡 기프트 카드 코드를 넣으셔야 합니다
+
 예:
 상품가격 5000원 -> 기프트 카드 가격 1만원
 상품가격 3만 5천원 -> 기프트 카드 가격 5만원
-상품가격 7만 5천원 -> 키프트 카드 가격 10만원
+상품가격 7만 5천원 -> 기프트 카드 가격 10만원
 상품가격 13만 5천원 -> 기프트 카드 가격 17만원
+
 상품 가격이 기프트 카드 가격을 넘어갈 때는 (예: 13만 5천원)
+
 기프트 카드 1: ~~~~~~~ (10만원)
-키프트 카드 2: ~~~~~~~ (7만원)
+기프트 카드 2: ~~~~~~~ (7만원)
+
 위의 형식으로 써주시기 바랍니다
 
 개발자 연락처:
 01021270158
+            </div>
+
+        </div>
+
+    </div>
+
+    <!-- 신청 버튼 -->
+    <button class="submit-button" type="button">
+        신청
+    </button>
+
+</body>
+</html>
