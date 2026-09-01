@@ -1,0 +1,285 @@
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+:root {
+    --primary: #2563eb;
+    --primary-dark: #1e40af;
+    --secondary: #10b981;
+    --bg: #f9fafb;
+    --text: #1f2937;
+    --text-light: #6b7280;
+    --border: #e5e7eb;
+    --white: #ffffff;
+}
+
+html {
+    scroll-behavior: smooth;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', sans-serif;
+    line-height: 1.6;
+    color: var(--text);
+    background-color: var(--bg);
+    height: 100vh;
+    overflow: hidden;
+}
+
+/* ============ 메인 레이아웃 ============ */
+.main-container {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 1rem;
+    padding: 1rem;
+    height: 100vh;
+    background: var(--bg);
+}
+
+/* ============ 패널 공통 스타일 ============ */
+.left-panel,
+.middle-panel,
+.right-panel {
+    background: var(--white);
+    border-radius: 12px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.panel-header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--white);
+    padding: 1rem;
+    font-size: 1.1rem;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+}
+
+/* ============ 입력 그룹 ============ */
+.input-group {
+    padding: 1rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+}
+
+.input-group label {
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: var(--text);
+}
+
+.input-field,
+.textarea-field {
+    padding: 0.75rem;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-size: 0.9rem;
+    font-family: inherit;
+    resize: none;
+    transition: all 0.2s;
+}
+
+.input-field:focus,
+.textarea-field:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.input-field {
+    height: 2.5rem;
+}
+
+.textarea-field {
+    height: 100px;
+    resize: vertical;
+}
+
+.textarea-field.html-editor {
+    font-family: 'Courier New', monospace;
+    font-size: 0.85rem;
+}
+
+/* ============ 버튼 ============ */
+.add-btn {
+    background: var(--primary);
+    color: var(--white);
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: all 0.2s;
+}
+
+.add-btn:hover {
+    background: var(--primary-dark);
+}
+
+.add-btn:active {
+    transform: scale(0.98);
+}
+
+/* ============ 왼쪽 패널: 상품링크 ============ */
+.left-panel {
+    flex: 1;
+}
+
+.link-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1rem;
+}
+
+.link-item {
+    background: var(--bg);
+    padding: 1rem;
+    border-radius: 6px;
+    margin-bottom: 0.75rem;
+    border-left: 3px solid var(--primary);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+}
+
+.link-item a {
+    color: var(--primary);
+    text-decoration: none;
+    word-break: break-all;
+    flex: 1;
+    font-size: 0.85rem;
+}
+
+.link-item a:hover {
+    text-decoration: underline;
+}
+
+.remove-btn {
+    background: #ef4444;
+    color: var(--white);
+    border: none;
+    padding: 0.4rem 0.8rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.8rem;
+    white-space: nowrap;
+}
+
+.remove-btn:hover {
+    background: #dc2626;
+}
+
+.empty-state {
+    text-align: center;
+    color: var(--text-light);
+    padding: 2rem 1rem;
+}
+
+/* ============ 중간 패널: 글자 입력 ============ */
+.middle-panel {
+    flex: 1;
+}
+
+#middlePreview {
+    flex: 1;
+}
+
+/* ============ 오른쪽 패널: HTML 미리보기 ============ */
+.right-panel {
+    flex: 1;
+}
+
+#htmlContent {
+    height: 120px;
+}
+
+/* ============ 미리보기 박스 ============ */
+.preview-box {
+    flex: 1;
+    overflow-y: auto;
+    padding: 1.5rem;
+    background: var(--bg);
+    border-top: 1px solid var(--border);
+}
+
+#middlePreview {
+    font-size: 1rem;
+    line-height: 1.6;
+    word-break: break-word;
+    white-space: pre-wrap;
+}
+
+#preview {
+    border-radius: 6px;
+    background: var(--white);
+}
+
+#preview iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+    border-radius: 6px;
+}
+
+/* ============ 스크롤바 ============ */
+.link-list::-webkit-scrollbar,
+.preview-box::-webkit-scrollbar {
+    width: 6px;
+}
+
+.link-list::-webkit-scrollbar-track,
+.preview-box::-webkit-scrollbar-track {
+    background: var(--bg);
+}
+
+.link-list::-webkit-scrollbar-thumb,
+.preview-box::-webkit-scrollbar-thumb {
+    background: var(--border);
+    border-radius: 3px;
+}
+
+.link-list::-webkit-scrollbar-thumb:hover,
+.preview-box::-webkit-scrollbar-thumb:hover {
+    background: var(--text-light);
+}
+
+/* ============ 반응형 ============ */
+@media (max-width: 1200px) {
+    .main-container {
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+        padding: 0.75rem;
+    }
+
+    .right-panel {
+        grid-column: 1 / -1;
+    }
+}
+
+@media (max-width: 768px) {
+    .main-container {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+        padding: 0.5rem;
+        height: auto;
+    }
+
+    .left-panel,
+    .middle-panel,
+    .right-panel {
+        min-height: 50vh;
+    }
+
+    .textarea-field {
+        height: 80px;
+    }
+}
