@@ -6,6 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Coupang 대리구매</title>
 
+```
 <style>
     body {
         margin: 0;
@@ -77,31 +78,26 @@
 ```
 <div class="container">
 
-    <!-- 1번째 칸 -->
     <div class="box">
         <div class="title">연락받을 전화번호:</div>
         <textarea id="phone" placeholder="연락받을 전화번호를 입력하세요"></textarea>
     </div>
 
-    <!-- 2번째 칸 -->
     <div class="box">
         <div class="title">주소:</div>
         <textarea id="address" placeholder="주소를 입력하세요"></textarea>
     </div>
 
-    <!-- 3번째 칸 -->
     <div class="box">
         <div class="title">상품 링크:</div>
         <textarea id="product" placeholder="쿠팡의 상품 링크를 입력하세요"></textarea>
     </div>
 
-    <!-- 4번째 칸 -->
     <div class="box">
         <div class="title">코드:</div>
         <textarea id="code" placeholder="쿠팡 기프트 카드 코드를 입력하세요"></textarea>
     </div>
 
-    <!-- 5번째 칸 -->
     <div class="box">
         <div class="title">안내문:</div>
 
@@ -142,25 +138,13 @@
 ```
 </div>
 
-<!-- 신청 버튼 -->
 <button class="submit-button" id="submitButton" type="button">
     신청
 </button>
 
-
 <script>
-
-    // ==========================================
-    // Cloudflare Worker 주소
-    // ==========================================
-
     const WORKER_URL =
         "https://coupang-apply.yjh20130103.workers.dev/";
-
-
-    // ==========================================
-    // 신청 버튼
-    // ==========================================
 
     document.getElementById("submitButton").addEventListener("click", async function () {
 
@@ -176,68 +160,42 @@
         const code =
             document.getElementById("code").value.trim();
 
-
-        // ==========================================
-        // 빈칸 확인
-        // ==========================================
-
         if (!phone || !address || !product || !code) {
-
             alert("모든 내용을 입력해주세요.");
-
             return;
         }
-
 
         const button =
             document.getElementById("submitButton");
 
-
         button.disabled = true;
         button.textContent = "신청 전송 중...";
-
 
         try {
 
             const response = await fetch(WORKER_URL, {
-
                 method: "POST",
-
                 headers: {
                     "Content-Type": "application/json"
                 },
-
                 body: JSON.stringify({
-
                     phone: phone,
                     address: address,
                     product: product,
                     code: code
-
                 })
-
             });
 
-
             if (!response.ok) {
-
                 throw new Error("전송 실패");
-
             }
 
-
             alert("신청이 정상적으로 접수되었습니다.");
-
-
-            // ==========================================
-            // 신청 성공 후 입력칸 초기화
-            // ==========================================
 
             document.getElementById("phone").value = "";
             document.getElementById("address").value = "";
             document.getElementById("product").value = "";
             document.getElementById("code").value = "";
-
 
         } catch (error) {
 
@@ -248,16 +206,13 @@
                 "잠시 후 다시 시도해주세요."
             );
 
-
         } finally {
 
             button.disabled = false;
             button.textContent = "신청";
 
         }
-
     });
-
 </script>
 ```
 
