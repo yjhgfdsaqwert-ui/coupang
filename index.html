@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>웹사이트 빌더</title>
+    <title>coupang 대리구매 신청</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -16,7 +16,7 @@
                 <input 
                     type="text" 
                     id="productUrl" 
-                    placeholder="https://example.com" 
+                    placeholder="상품 링크를 추가하시오" 
                     class="input-field"
                 >
                 <button class="add-btn" onclick="addProductLink()">추가</button>
@@ -28,34 +28,25 @@
 
         <!-- 중간: 글자 입력 -->
         <div class="middle-panel">
-            <div class="panel-header">글자 입력</div>
+            <div class="panel-header">코드 입력</div>
             <div class="input-group">
-                <label for="textContent">텍스트:</label>
+                <label for="textContent">코드:</label>
                 <textarea 
                     id="textContent" 
                     class="textarea-field" 
-                    placeholder="여기에 글을 입력하세요..."
+                    placeholder="쿠팡 기프트 카드 코드를 입력하세요"
                 ></textarea>
-                <button class="add-btn" onclick="updateMiddleContent()">반영</button>
-            </div>
-            <div id="middlePreview" class="preview-box">
+               
                 <!-- 미리보기 -->
             </div>
         </div>
 
         <!-- 오른쪽: HTML 미리보기 -->
         <div class="right-panel">
-            <div class="panel-header">HTML 편집 및 미리보기</div>
+            <div class="panel-header">안내사항</div>
             <div class="input-group">
-                <label for="htmlContent">HTML 코드:</label>
-                <textarea 
-                    id="htmlContent" 
-                    class="textarea-field html-editor" 
-                    placeholder="&lt;div&gt;HTML을 입력하세요&lt;/div&gt;"
-                ></textarea>
-                <button class="add-btn" onclick="updatePreview()">미리보기</button>
-            </div>
-            <div id="preview" class="preview-box">
+                <label for="htmlContent">안내사항:</label>
+                
                 <!-- HTML 미리보기 렌더링 -->
             </div>
         </div>
