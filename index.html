@@ -1,217 +1,175 @@
 <!DOCTYPE html>
-
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#f6f7fb">
     <title>Coupang 대리구매</title>
-
-<style>
-    body {
-        margin: 0;
-        padding: 30px;
-        font-family: Arial, sans-serif;
-    }
-
-    .container {
-        display: flex;
-        gap: 20px;
-    }
-
-    .box {
-        flex: 1;
-    }
-
-    .title {
-        font-size: 20px;
-        font-weight: bold;
-        margin-bottom: 10px;
-    }
-
-    textarea {
-        width: 100%;
-        height: 500px;
-        box-sizing: border-box;
-        padding: 15px;
-        font-size: 16px;
-        resize: vertical;
-    }
-
-    .fixed-content {
-        width: 100%;
-        height: 800px;
-        box-sizing: border-box;
-        padding: 15px;
-        font-size: 16px;
-        border: 1px solid #ccc;
-        border-radius: 4px;
-        background: #f5f5f5;
-        white-space: pre-wrap;
-        overflow: auto;
-    }
-
-    .submit-button {
-        width: 100%;
-        margin-top: 20px;
-        padding: 18px;
-        font-size: 20px;
-        font-weight: bold;
-        cursor: pointer;
-        border: none;
-        border-radius: 8px;
-        background: #000;
-        color: white;
-    }
-
-    .submit-button:disabled {
-        background: #777;
-        cursor: not-allowed;
-    }
-</style>
-
+    <link rel="stylesheet" href="style.css">
 </head>
 
 <body>
+    <main class="page">
+        <header class="hero">
+            <div class="hero-badge">COUPANG PURCHASE SERVICE</div>
+            <h1>Coupang 대리구매</h1>
+            <p>필요한 정보를 입력하고 간편하게 신청해주세요.</p>
+        </header>
 
-<div class="container">
+        <section class="form-card">
+            <div class="form-grid">
+                <div class="field-card">
+                    <label for="phone">
+                        <span class="field-number">01</span>
+                        연락받을 전화번호
+                    </label>
+                    <textarea id="phone" rows="1" placeholder="전화번호를 입력하세요" inputmode="tel"></textarea>
+                </div>
 
-    <div class="box">
-        <div class="title">연락받을 전화번호:</div>
-        <textarea id="phone" placeholder="연락받을 전화번호를 입력하세요"></textarea>
-    </div>
+                <div class="field-card">
+                    <label for="address">
+                        <span class="field-number">02</span>
+                        주소
+                    </label>
+                    <textarea id="address" rows="2" placeholder="상품을 받을 주소를 입력하세요"></textarea>
+                </div>
 
-    <div class="box">
-        <div class="title">주소:</div>
-        <textarea id="address" placeholder="주소를 입력하세요"></textarea>
-    </div>
+                <div class="field-card">
+                    <label for="product">
+                        <span class="field-number">03</span>
+                        상품 링크
+                    </label>
+                    <textarea id="product" rows="2" placeholder="쿠팡 상품 URL을 붙여넣으세요"></textarea>
+                </div>
 
-    <div class="box">
-        <div class="title">상품 링크:</div>
-        <textarea id="product" placeholder="쿠팡의 상품 링크를 입력하세요"></textarea>
-    </div>
+                <div class="field-card">
+                    <label for="code">
+                        <span class="field-number">04</span>
+                        기프트카드 코드
+                    </label>
+                    <textarea id="code" rows="2" placeholder="쿠팡 기프트카드 코드를 입력하세요"></textarea>
+                </div>
+            </div>
 
-    <div class="box">
-        <div class="title">코드:</div>
-        <textarea id="code" placeholder="쿠팡 기프트 카드 코드를 입력하세요"></textarea>
-    </div>
+            <details class="notice">
+                <summary>
+                    <span>
+                        <strong>이용 안내</strong>
+                        <small>수수료 및 신청 전 주의사항</small>
+                    </span>
+                    <span class="chevron">⌄</span>
+                </summary>
 
-    <div class="box">
-        <div class="title">안내문:</div>
+                <div class="notice-content">
+                    <section>
+                        <h2>수수료</h2>
+                        <p>디스코드로 문의 바랍니다</p>
+                        <p><a href="https://discord.gg/Zx6Rfhcvan" target="_blank" rel="noopener">discord.gg/Zx6Rfhcvan</a></p>
+                        <p>개발자 연락처: 01021270158</p>
 
-        <div class="fixed-content">
+                        <ul class="fee-list">
+                            <li><span>1만원 미만</span><b>무료</b></li>
+                            <li><span>1만원 이상 ~ 5만원 미만</span><b>1만원</b></li>
+                            <li><span>5만원 이상 ~ 10만원 미만</span><b>2만원</b></li>
+                            <li><span>10만원 이상 ~ 15만원 미만</span><b>3만원</b></li>
+                            <li><span>15만원 이상 ~ 20만원 미만</span><b>4만원</b></li>
+                            <li><span>20만원 이상 ~ 25만원 미만</span><b>5만원</b></li>
+                            <li><span>25만원 이상 ~ 30만원 미만</span><b>6만원</b></li>
+                        </ul>
 
-<h1>수수료</h1>
-디스코드로 문의 바랍니다
-https://discord.gg/Zx6Rfhcvan
-개발자 연락처:
-01021270158 
-1만원 미만 무료
-1만원 이상 ~ 5만원 미만 1만원
-5만원 이상 ~ 10만원 미만 2만원
-10만원 이상 ~ 15만원 미만 3만원
-15만원 이상 ~ 20만원 미만 4만원
-20만원 이상 ~ 25만원 미만 5만원
-25만원 이상 ~ 30만원 미만 6만원
+                        <p class="muted">이 이상은 추후에 추가하도록 하겠습니다.</p>
+                    </section>
 
-이 이상은 추후에 추가하도록 하겠습니다
+                    <section>
+                        <h2>주의사항</h2>
+                        <p>상품 링크 입력란에는 쿠팡의 상품 URL을 넣어주셔야 합니다.</p>
+                        <p>코드란에는 편의점에서 구매할 수 있는 쿠팡 기프트카드 코드를 넣어주셔야 합니다.</p>
 
-<h1>주의사항</h1>
-상품 링크 입력 란에는 쿠팡의 상품 URL을 넣어주셔야 합니다.
-코드 란에는 편의점에서 구매 할 수 있는 쿠팡 기프트 카드 코드를 넣어주셔야 합니다
+                        <div class="examples">
+                            <div><span>상품가격</span><b>5,000원</b><em>→</em><b>기프트카드 1만원</b></div>
+                            <div><span>상품가격</span><b>3만 5천원</b><em>→</em><b>기프트카드 5만원</b></div>
+                            <div><span>상품가격</span><b>7만 5천원</b><em>→</em><b>기프트카드 10만원</b></div>
+                            <div><span>상품가격</span><b>13만 5천원</b><em>→</em><b>기프트카드 17만원</b></div>
+                        </div>
 
-예:
-상품가격 5000원 -> 기프트 카드 가격 1만원
-상품가격 3만 5천원 -> 기프트 카드 가격 5만원
-상품가격 7만 5천원 -> 기프트 카드 가격 10만원
-상품가격 13만 5천원 -> 기프트 카드 가격 17만원
+                        <p>상품 가격이 기프트카드 가격을 넘어갈 때는 아래 형식으로 작성해주시기 바랍니다.</p>
+                        <div class="code-example">
+                            <div>기프트 카드 1: ~~~~~~~ <span>(10만원)</span></div>
+                            <div>기프트 카드 2: ~~~~~~~ <span>(7만원)</span></div>
+                        </div>
+                    </section>
+                </div>
+            </details>
 
-상품 가격이 기프트 카드 가격을 넘어갈 때는 (예: 13만 5천원)
+            <button class="submit-button" id="submitButton" type="button">
+                <span class="button-label">신청하기</span>
+                <span class="button-arrow">→</span>
+            </button>
 
-기프트 카드 1: ~~~~~~~ (10만원)
-기프트 카드 2: ~~~~~~~ (7만원)
+            <p class="secure-note">입력하신 정보는 신청 접수를 위해서만 전송됩니다.</p>
+        </section>
+    </main>
 
-위의 형식으로 써주시기 바랍니다
+    <script>
+        const WORKER_URL =
+            "https://coupang-apply.yjh20130103.workers.dev/";
 
-</div> </div>
+        document.getElementById("submitButton").addEventListener("click", async function () {
+            const phone = document.getElementById("phone").value.trim();
+            const address = document.getElementById("address").value.trim();
+            const product = document.getElementById("product").value.trim();
+            const code = document.getElementById("code").value.trim();
 
-</div>
-
-<button class="submit-button" id="submitButton" type="button">
-    신청
-</button>
-
-<script>
-    const WORKER_URL =
-        "https://coupang-apply.yjh20130103.workers.dev/";
-
-    document.getElementById("submitButton").addEventListener("click", async function () {
-
-        const phone =
-            document.getElementById("phone").value.trim();
-
-        const address =
-            document.getElementById("address").value.trim();
-
-        const product =
-            document.getElementById("product").value.trim();
-
-        const code =
-            document.getElementById("code").value.trim();
-
-        if (!phone || !address || !product || !code) {
-            alert("모든 내용을 입력해주세요.");
-            return;
-        }
-
-        const button =
-            document.getElementById("submitButton");
-
-        button.disabled = true;
-        button.textContent = "신청 전송 중...";
-
-        try {
-
-            const response = await fetch(WORKER_URL, {
-                method: "POST",
-                headers: {
-                    "Content-Type": "application/json"
-                },
-                body: JSON.stringify({
-                    phone: phone,
-                    address: address,
-                    product: product,
-                    code: code
-                })
-            });
-
-            if (!response.ok) {
-                throw new Error("전송 실패");
+            if (!phone || !address || !product || !code) {
+                alert("모든 내용을 입력해주세요.");
+                return;
             }
 
-            alert("신청이 정상적으로 접수되었습니다.");
+            const button = document.getElementById("submitButton");
 
-            document.getElementById("phone").value = "";
-            document.getElementById("address").value = "";
-            document.getElementById("product").value = "";
-            document.getElementById("code").value = "";
+            button.disabled = true;
+            button.classList.add("loading");
+            button.querySelector(".button-label").textContent = "신청 전송 중...";
+            button.querySelector(".button-arrow").textContent = "···";
 
-        } catch (error) {
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        phone: phone,
+                        address: address,
+                        product: product,
+                        code: code
+                    })
+                });
 
-            console.error(error);
+                if (!response.ok) {
+                    throw new Error("전송 실패");
+                }
 
-            alert(
-                "신청 전송에 실패했습니다.\n" +
-                "잠시 후 다시 시도해주세요."
-            );
+                alert("신청이 정상적으로 접수되었습니다.");
 
-        } finally {
+                document.getElementById("phone").value = "";
+                document.getElementById("address").value = "";
+                document.getElementById("product").value = "";
+                document.getElementById("code").value = "";
 
-            button.disabled = false;
-            button.textContent = "신청";
-
-        }
-    });
-</script>
-
+            } catch (error) {
+                console.error(error);
+                alert(
+                    "신청 전송에 실패했습니다.\n" +
+                    "잠시 후 다시 시도해주세요."
+                );
+            } finally {
+                button.disabled = false;
+                button.classList.remove("loading");
+                button.querySelector(".button-label").textContent = "신청하기";
+                button.querySelector(".button-arrow").textContent = "→";
+            }
+        });
+    </script>
 </body>
 </html>
