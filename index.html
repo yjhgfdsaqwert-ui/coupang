@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <meta name="theme-color" content="#f6f7fb">
+    <title>Coupang 대리구매</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" type="image/jpeg" href="coupang.jpg">
+</head>
+
+<body>
+    <main class="page">
+        <header class="hero">
+            <h1>Coupang 대리구매</h1>
+            <p>필요한 정보를 입력하고 간편하게 신청해주세요.</p>
+        </header>
+
+        <section class="form-card">
+            <div class="form-grid">
+                <div class="field-card">
+                    <label for="name">
+                        <span class="field-number">01</span>
+                        이름
+                    </label>
+                    <textarea id="name" rows="1" placeholder="이름을 입력하세요"></textarea>
+                </div>
+
+                <div class="field-card">
+                    <label for="phone">
+                        <span class="field-number">02</span>
+                        연락받을 전화번호
+                    </label>
+                    <textarea id="phone" rows="1" placeholder="전화번호를 입력하세요" inputmode="tel"></textarea>
+                </div>
+
+                <div class="field-card">
+                    <label for="address">
+                        <span class="field-number">03</span>
+                        주소
+                    </label>
+                    <textarea id="address" rows="2" placeholder="상품을 받을 주소를 입력하세요"></textarea>
+                </div>
+
+                <div class="field-card">
+                    <label for="product">
+                        <span class="field-number">04</span>
+                        상품 링크
+                    </label>
+                    <textarea id="product" rows="2" placeholder="쿠팡 상품 URL을 붙여넣으세요"></textarea>
+                </div>
+
+                <div class="field-card">
+                    <label for="code">
+                        <span class="field-number">05</span>
+                        기프트카드 코드
+                    </label>
+                    <textarea id="code" rows="2" placeholder="쿠팡 기프트카드 코드를 입력하세요"></textarea>
+                </div>
+            </div>
+
+            <details class="notice">
+                <summary>
+                    <span>
+                        <strong>이용 안내</strong>
+                        <small>수수료 및 신청 전 주의사항</small>
+                    </span>
+                    <span class="chevron">⌄</span>
+                </summary>
+
+                <div class="notice-content">
+                    <section>
+                        <h2 style="font-size: 32px; font-weight: 900; text-align: center;">해외배송 안됩니다</h2>
+                        <h2>수수료</h2>
+                        <p>디스코드로 문의 바랍니다</p>
+                        <p><a href="https://discord.gg/Zx6Rfhcvan" target="_blank" rel="noopener">discord.gg/Zx6Rfhcvan</a></p>
+
+                        <ul class="fee-list">
+                            <li><span>1만원 미만</span><b>무료</b></li>
+                            <li><span>1만원 이상 ~ 5만원 미만</span><b>1만원</b></li>
+                            <li><span>5만원 이상 ~ 10만원 미만</span><b>2만원</b></li>
+                            <li><span>10만원 이상 ~ 15만원 미만</span><b>3만원</b></li>
+                            <li><span>15만원 이상 ~ 20만원 미만</span><b>4만원</b></li>
+                            <li><span>20만원 이상 ~ 25만원 미만</span><b>5만원</b></li>
+                            <li><span>25만원 이상 ~ 30만원 미만</span><b>6만원</b></li>
+                        </ul>
+
+                        <p class="muted">이 이상은 추후에 추가하도록 하겠습니다.</p>
+                    </section>
+
+                    <section>
+                        <h2>주의사항</h2>
+                        <p>상품 링크 입력란에는 쿠팡의 상품 URL을 넣어주셔야 합니다.</p>
+                        <p>코드란에는 편의점에서 구매할 수 있는 쿠팡 기프트카드 코드를 넣어주셔야 합니다.</p>
+
+                        <div class="examples">
+                            <div><span>상품가격</span><b>5,000원</b><em>→</em><b>기프트카드 1만원</b></div>
+                            <div><span>상품가격</span><b>3만 5천원</b><em>→</em><b>기프트카드 5만원</b></div>
+                            <div><span>상품가격</span><b>7만 5천원</b><em>→</em><b>기프트카드 10만원</b></div>
+                            <div><span>상품가격</span><b>13만 5천원</b><em>→</em><b>기프트카드 17만원</b></div>
+                        </div>
+
+                        <p>상품 가격이 기프트카드 가격을 넘어갈 때는 아래 형식으로 작성해주시기 바랍니다.</p>
+                        <div class="code-example">
+                            <div>기프트 카드 1: ~~~~~~~ <span>(10만원)</span></div>
+                            <div>기프트 카드 2: ~~~~~~~ <span>(7만원)</span></div>
+                        </div>
+                    </section>
+                </div>
+            </details>
+
+            <button class="submit-button contact-button" id="contactButton" type="button">
+                <span class="button-label">문의</span>
+                <span class="button-arrow">→</span>
+            </button>
+
+            <button class="submit-button" id="submitButton" type="button">
+                <span class="button-label">신청하기</span>
+                <span class="button-arrow">→</span>
+            </button>
+
+            <p class="secure-note">입력하신 정보는 신청 접수를 위해서만 전송됩니다.</p>
+        </section>
+    </main>
+
+    <script>
+        const WORKER_URL =
+            "https://coupang-apply.yjh20130103.workers.dev/";
+
+        document.getElementById("contactButton").addEventListener("click", function () {
+            window.location.href = "info.html";
+        });
+
+        document.getElementById("submitButton").addEventListener("click", async function () {
+            const name = document.getElementById("name").value.trim();
+            const phone = document.getElementById("phone").value.trim();
+            const address = document.getElementById("address").value.trim();
+            const product = document.getElementById("product").value.trim();
+            const code = document.getElementById("code").value.trim();
+
+            if (!name || !phone || !address || !product || !code) {
+                alert("모든 내용을 입력해주세요.");
+                return;
+            }
+
+            const button = document.getElementById("submitButton");
+
+            button.disabled = true;
+            button.classList.add("loading");
+            button.querySelector(".button-label").textContent = "신청 전송 중...";
+            button.querySelector(".button-arrow").textContent = "···";
+
+            try {
+                const response = await fetch(WORKER_URL, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    body: JSON.stringify({
+                        name: name,
+                        phone: phone,
+                        address: address,
+                        product: product,
+                        code: code
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error("전송 실패");
+                }
+
+                alert("신청이 정상적으로 접수되었습니다.");
+
+                document.getElementById("name").value = "";
+                document.getElementById("phone").value = "";
+                document.getElementById("address").value = "";
+                document.getElementById("product").value = "";
+                document.getElementById("code").value = "";
+
+            } catch (error) {
+                console.error(error);
+                alert(
+                    "신청 전송에 실패했습니다.\n" +
+                    "잠시 후 다시 시도해주세요."
+                );
+            } finally {
+                button.disabled = false;
+                button.classList.remove("loading");
+                button.querySelector(".button-label").textContent = "신청하기";
+                button.querySelector(".button-arrow").textContent = "→";
+            }
+        });
+    </script>
+</body>
+</html>
