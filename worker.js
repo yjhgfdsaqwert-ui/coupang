@@ -22,13 +22,26 @@ export default {
     // ========================================
     // 대리구매 신청
     // POST /api/apply
-    // Discord Webhook: APPLY
+    // Webhook: APPLY
     // ========================================
     if (
       request.method === "POST" &&
       url.pathname === "/api/apply"
     ) {
       try {
+        // APPLY 웹후크 확인
+        if (!env.APPLY) {
+          console.error("APPLY Secret이 설정되지 않았습니다.");
+
+          return new Response(
+            "대리구매 신청 웹후크가 설정되지 않았습니다.",
+            {
+              status: 500,
+              headers: corsHeaders
+            }
+          );
+        }
+
         const data = await request.json();
 
         // 입력값 확인
@@ -131,13 +144,28 @@ ${data.code}`
     // ========================================
     // 문의
     // POST /api/inquiry
-    // Discord Webhook: INQUIRY
+    // Webhook: INQUIRY
     // ========================================
     if (
       request.method === "POST" &&
       url.pathname === "/api/inquiry"
     ) {
       try {
+        // INQUIRY 웹후크 확인
+        if (!env.INQUIRY) {
+          console.error(
+            "INQUIRY Secret이 설정되지 않았습니다."
+          );
+
+          return new Response(
+            "문의 웹후크가 설정되지 않았습니다.",
+            {
+              status: 500,
+              headers: corsHeaders
+            }
+          );
+        }
+
         const data = await request.json();
 
         // 입력값 확인
