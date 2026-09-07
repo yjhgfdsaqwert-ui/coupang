@@ -2,18 +2,12 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // =========================
-    // CORS
-    // =========================
     const corsHeaders = {
       "Access-Control-Allow-Origin": "*",
       "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
       "Access-Control-Allow-Headers": "Content-Type"
     };
 
-    // =========================
-    // OPTIONS
-    // =========================
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -29,7 +23,6 @@ export default {
       try {
         const data = await request.json();
 
-        // 입력값 확인
         if (
           !data.name ||
           !data.phone ||
@@ -43,7 +36,6 @@ export default {
           });
         }
 
-        // Discord 메시지
         const message = {
           content:
 `**새로운 대리구매 신청**
@@ -64,7 +56,6 @@ ${data.product}
 ${data.code}`
         };
 
-        // Discord Webhook 전송
         const discordResponse = await fetch(
           env.DISCORD_WEBHOOK_URL,
           {
@@ -77,6 +68,12 @@ ${data.code}`
         );
 
         if (!discordResponse.ok) {
+          console.error(
+            "Discord 응답:",
+            discordResponse.status,
+            await discordResponse.text()
+          );
+
           return new Response("Discord 전송에 실패했습니다.", {
             status: 500,
             headers: corsHeaders
@@ -95,7 +92,7 @@ ${data.code}`
         );
 
       } catch (error) {
-        console.error(error);
+        console.error("신청 처리 오류:", error);
 
         return new Response("서버 오류가 발생했습니다.", {
           status: 500,
@@ -115,7 +112,6 @@ ${data.code}`
       try {
         const data = await request.json();
 
-        // 문의 내용 확인
         if (!data.inquiry) {
           return new Response("문의 내용을 입력해주세요.", {
             status: 400,
@@ -123,7 +119,6 @@ ${data.code}`
           });
         }
 
-        // Discord 메시지
         const message = {
           content:
 `**새로운 문의**
@@ -132,7 +127,6 @@ ${data.code}`
 ${data.inquiry}`
         };
 
-        // Discord Webhook 전송
         const discordResponse = await fetch(
           env.DISCORD_WEBHOOK_URL,
           {
@@ -145,6 +139,12 @@ ${data.inquiry}`
         );
 
         if (!discordResponse.ok) {
+          console.error(
+            "Discord 응답:",
+            discordResponse.status,
+            await discordResponse.text()
+          );
+
           return new Response("Discord 전송에 실패했습니다.", {
             status: 500,
             headers: corsHeaders
@@ -163,7 +163,7 @@ ${data.inquiry}`
         );
 
       } catch (error) {
-        console.error(error);
+        console.error("문의 처리 오류:", error);
 
         return new Response("서버 오류가 발생했습니다.", {
           status: 500,
@@ -173,7 +173,7 @@ ${data.inquiry}`
     }
 
     // =========================
-    // 다른 POST 요청
+    // 그 외 POST
     // =========================
     if (request.method === "POST") {
       return new Response("잘못된 요청입니다.", {
@@ -183,16 +183,12 @@ ${data.inquiry}`
     }
 
     // =========================
-    // GET 요청
-    // 사이트 파일 제공
+    // GET → 사이트
     // =========================
     if (request.method === "GET") {
       return env.ASSETS.fetch(request);
     }
 
-    // =========================
-    // 그 외 메서드
-    // =========================
     return new Response("Method Not Allowed", {
       status: 405,
       headers: corsHeaders
