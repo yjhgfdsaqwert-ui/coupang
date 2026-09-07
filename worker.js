@@ -29,7 +29,6 @@ export default {
       url.pathname === "/api/apply"
     ) {
       try {
-        // APPLY 웹후크 확인
         if (!env.APPLY) {
           console.error("APPLY Secret이 설정되지 않았습니다.");
 
@@ -62,24 +61,25 @@ export default {
         }
 
         // Discord 메시지
+        const messageContent =
+          "**대리구매 신청**\n\n" +
+          "**이름**\n" +
+          data.name +
+          "\n\n" +
+          "**연락받을 전화번호**\n" +
+          data.phone +
+          "\n\n" +
+          "**주소**\n" +
+          data.address +
+          "\n\n" +
+          "**상품 링크**\n" +
+          data.product +
+          "\n\n" +
+          "**기프트카드 코드**\n" +
+          data.code;
+
         const message = {
-          content:
-`**대리구매 신청**
-
-**이름**
-${data.name}
-
-**연락받을 전화번호**
-${data.phone}
-
-**주소**
-${data.address}
-
-**상품 링크**
-${data.product}
-
-**기프트카드 코드**
-${data.code}`
+          content: messageContent
         };
 
         // APPLY 웹후크로 전송
@@ -151,7 +151,6 @@ ${data.code}`
       url.pathname === "/api/inquiry"
     ) {
       try {
-        // INQUIRY 웹후크 확인
         if (!env.INQUIRY) {
           console.error(
             "INQUIRY Secret이 설정되지 않았습니다."
@@ -180,10 +179,12 @@ ${data.code}`
         }
 
         // Discord 메시지
+        const messageContent =
+          "**문의**\n" +
+          data.inquiry;
+
         const message = {
-          content:
-`**문의**
-${data.inquiry}`
+          content: messageContent
         };
 
         // INQUIRY 웹후크로 전송
