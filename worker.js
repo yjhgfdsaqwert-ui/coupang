@@ -1,3 +1,4 @@
+```js
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -8,9 +9,6 @@ export default {
       "Access-Control-Allow-Headers": "Content-Type"
     };
 
-    // ========================================
-    // OPTIONS
-    // ========================================
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -18,11 +16,6 @@ export default {
       });
     }
 
-    // ========================================
-    // 대리구매 신청
-    // POST /api/apply
-    // Webhook: APPLY
-    // ========================================
     if (
       request.method === "POST" &&
       url.pathname === "/api/apply"
@@ -42,7 +35,6 @@ export default {
 
         const data = await request.json();
 
-        // 입력값 확인
         if (
           !data.name ||
           !data.phone ||
@@ -59,29 +51,25 @@ export default {
           );
         }
 
-        // Discord 메시지
-        const messageContent =
-          "**대리구매 신청**\n\n" +
-          "**이름**\n" +
-          data.name +
-          "\n\n" +
-          "**연락받을 전화번호**\n" +
-          data.phone +
-          "\n\n" +
-          "**주소**\n" +
-          data.address +
-          "\n\n" +
-          "**상품 링크**\n" +
-          data.product +
-          "\n\n" +
-          "**기프트카드 코드**\n" +
-          data.code;
-
         const message = {
-          content: messageContent
+          content:
+            "**대리구매 신청**\n\n" +
+            "**이름**\n" +
+            data.name +
+            "\n\n" +
+            "**연락받을 전화번호**\n" +
+            data.phone +
+            "\n\n" +
+            "**주소**\n" +
+            data.address +
+            "\n\n" +
+            "**상품 링크**\n" +
+            data.product +
+            "\n\n" +
+            "**기프트카드 코드**\n" +
+            data.code
         };
 
-        // APPLY 웹후크로 전송
         const discordResponse = await fetch(
           env.APPLY,
           {
@@ -140,11 +128,6 @@ export default {
       }
     }
 
-    // ========================================
-    // 문의
-    // POST /api/inquiry
-    // Webhook: INQUIRY
-    // ========================================
     if (
       request.method === "POST" &&
       url.pathname === "/api/inquiry"
@@ -166,7 +149,6 @@ export default {
 
         const data = await request.json();
 
-        // 입력값 확인
         if (!data.inquiry) {
           return new Response(
             "문의 내용을 입력해주세요.",
@@ -177,16 +159,12 @@ export default {
           );
         }
 
-        // Discord 메시지
-        const messageContent =
-          "**문의**\n" +
-          data.inquiry;
-
         const message = {
-          content: messageContent
+          content:
+            "**문의**\n\n" +
+            data.inquiry
         };
 
-        // INQUIRY 웹후크로 전송
         const discordResponse = await fetch(
           env.INQUIRY,
           {
@@ -245,9 +223,20 @@ export default {
       }
     }
 
-    // ========================================
-    // API가 아닌 POST
-    // ========================================
+    if (request.method === "GET") {
+      if (!env.ASSETS) {
+        return new Response(
+          "ASSETS 바인딩이 설정되지 않았습니다.",
+          {
+            status: 500,
+            headers: corsHeaders
+          }
+        );
+      }
+
+      return env.ASSETS.fetch(request);
+    }
+
     if (request.method === "POST") {
       return new Response(
         "잘못된 API 요청입니다.",
@@ -258,16 +247,6 @@ export default {
       );
     }
 
-    // ========================================
-    // GET → 정적 파일
-    // ========================================
-    if (request.method === "GET") {
-      return env.ASSETS.fetch(request);
-    }
-
-    // ========================================
-    // 그 외 Method
-    // ========================================
     return new Response(
       "Method Not Allowed",
       {
