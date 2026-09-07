@@ -1,3 +1,4 @@
+```js
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -8,7 +9,9 @@ export default {
       "Access-Control-Allow-Headers": "Content-Type"
     };
 
+    // ========================================
     // OPTIONS
+    // ========================================
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -19,6 +22,7 @@ export default {
     // ========================================
     // 대리구매 신청
     // POST /api/apply
+    // Discord Webhook: APPLY
     // ========================================
     if (
       request.method === "POST" &&
@@ -27,6 +31,7 @@ export default {
       try {
         const data = await request.json();
 
+        // 입력값 확인
         if (
           !data.name ||
           !data.phone ||
@@ -34,12 +39,16 @@ export default {
           !data.product ||
           !data.code
         ) {
-          return new Response("모든 항목을 입력해주세요.", {
-            status: 400,
-            headers: corsHeaders
-          });
+          return new Response(
+            "모든 항목을 입력해주세요.",
+            {
+              status: 400,
+              headers: corsHeaders
+            }
+          );
         }
 
+        // Discord 메시지
         const message = {
           content:
 `**새로운 대리구매 신청**
@@ -60,8 +69,9 @@ ${data.product}
 ${data.code}`
         };
 
+        // APPLY 웹후크로 전송
         const discordResponse = await fetch(
-          env.DISCORD_WEBHOOK_URL,
+          env.APPLY,
           {
             method: "POST",
             headers: {
@@ -76,7 +86,7 @@ ${data.code}`
             await discordResponse.text();
 
           console.error(
-            "Discord 오류:",
+            "APPLY Discord 오류:",
             discordResponse.status,
             discordText
           );
@@ -121,6 +131,7 @@ ${data.code}`
     // ========================================
     // 문의
     // POST /api/inquiry
+    // Discord Webhook: INQUIRY
     // ========================================
     if (
       request.method === "POST" &&
@@ -129,6 +140,7 @@ ${data.code}`
       try {
         const data = await request.json();
 
+        // 입력값 확인
         if (!data.inquiry) {
           return new Response(
             "문의 내용을 입력해주세요.",
@@ -139,6 +151,7 @@ ${data.code}`
           );
         }
 
+        // Discord 메시지
         const message = {
           content:
 `**새로운 문의**
@@ -147,8 +160,9 @@ ${data.code}`
 ${data.inquiry}`
         };
 
+        // INQUIRY 웹후크로 전송
         const discordResponse = await fetch(
-          env.DISCORD_WEBHOOK_URL,
+          env.INQUIRY,
           {
             method: "POST",
             headers: {
@@ -159,10 +173,13 @@ ${data.inquiry}`
         );
 
         if (!discordResponse.ok) {
+          const discordText =
+            await discordResponse.text();
+
           console.error(
-            "Discord 문의 오류:",
+            "INQUIRY Discord 오류:",
             discordResponse.status,
-            await discordResponse.text()
+            discordText
           );
 
           return new Response(
@@ -222,6 +239,9 @@ ${data.inquiry}`
       return env.ASSETS.fetch(request);
     }
 
+    // ========================================
+    // 그 외 Method
+    // ========================================
     return new Response(
       "Method Not Allowed",
       {
@@ -231,3 +251,4 @@ ${data.inquiry}`
     );
   }
 };
+```
