@@ -8,6 +8,7 @@ export default {
       "Access-Control-Allow-Headers": "Content-Type"
     };
 
+    // OPTIONS
     if (request.method === "OPTIONS") {
       return new Response(null, {
         status: 204,
@@ -15,11 +16,14 @@ export default {
       });
     }
 
-    // =========================
+    // ========================================
     // 대리구매 신청
-    // POST /api
-    // =========================
-    if (request.method === "POST" && url.pathname === "/api") {
+    // POST /api/apply
+    // ========================================
+    if (
+      request.method === "POST" &&
+      url.pathname === "/api/apply"
+    ) {
       try {
         const data = await request.json();
 
@@ -68,16 +72,22 @@ ${data.code}`
         );
 
         if (!discordResponse.ok) {
+          const discordText =
+            await discordResponse.text();
+
           console.error(
-            "Discord 응답:",
+            "Discord 오류:",
             discordResponse.status,
-            await discordResponse.text()
+            discordText
           );
 
-          return new Response("Discord 전송에 실패했습니다.", {
-            status: 500,
-            headers: corsHeaders
-          });
+          return new Response(
+            "Discord 전송에 실패했습니다.",
+            {
+              status: 500,
+              headers: corsHeaders
+            }
+          );
         }
 
         return new Response(
@@ -86,25 +96,32 @@ ${data.code}`
             status: 200,
             headers: {
               ...corsHeaders,
-              "Content-Type": "text/plain; charset=UTF-8"
+              "Content-Type":
+                "text/plain; charset=UTF-8"
             }
           }
         );
 
       } catch (error) {
-        console.error("신청 처리 오류:", error);
+        console.error(
+          "대리구매 신청 오류:",
+          error
+        );
 
-        return new Response("서버 오류가 발생했습니다.", {
-          status: 500,
-          headers: corsHeaders
-        });
+        return new Response(
+          "서버 오류가 발생했습니다.",
+          {
+            status: 500,
+            headers: corsHeaders
+          }
+        );
       }
     }
 
-    // =========================
+    // ========================================
     // 문의
     // POST /api/inquiry
-    // =========================
+    // ========================================
     if (
       request.method === "POST" &&
       url.pathname === "/api/inquiry"
@@ -113,10 +130,13 @@ ${data.code}`
         const data = await request.json();
 
         if (!data.inquiry) {
-          return new Response("문의 내용을 입력해주세요.", {
-            status: 400,
-            headers: corsHeaders
-          });
+          return new Response(
+            "문의 내용을 입력해주세요.",
+            {
+              status: 400,
+              headers: corsHeaders
+            }
+          );
         }
 
         const message = {
@@ -140,15 +160,18 @@ ${data.inquiry}`
 
         if (!discordResponse.ok) {
           console.error(
-            "Discord 응답:",
+            "Discord 문의 오류:",
             discordResponse.status,
             await discordResponse.text()
           );
 
-          return new Response("Discord 전송에 실패했습니다.", {
-            status: 500,
-            headers: corsHeaders
-          });
+          return new Response(
+            "Discord 전송에 실패했습니다.",
+            {
+              status: 500,
+              headers: corsHeaders
+            }
+          );
         }
 
         return new Response(
@@ -157,41 +180,54 @@ ${data.inquiry}`
             status: 200,
             headers: {
               ...corsHeaders,
-              "Content-Type": "text/plain; charset=UTF-8"
+              "Content-Type":
+                "text/plain; charset=UTF-8"
             }
           }
         );
 
       } catch (error) {
-        console.error("문의 처리 오류:", error);
+        console.error(
+          "문의 처리 오류:",
+          error
+        );
 
-        return new Response("서버 오류가 발생했습니다.", {
-          status: 500,
-          headers: corsHeaders
-        });
+        return new Response(
+          "서버 오류가 발생했습니다.",
+          {
+            status: 500,
+            headers: corsHeaders
+          }
+        );
       }
     }
 
-    // =========================
-    // 그 외 POST
-    // =========================
+    // ========================================
+    // API가 아닌 POST
+    // ========================================
     if (request.method === "POST") {
-      return new Response("잘못된 요청입니다.", {
-        status: 404,
-        headers: corsHeaders
-      });
+      return new Response(
+        "잘못된 API 요청입니다.",
+        {
+          status: 404,
+          headers: corsHeaders
+        }
+      );
     }
 
-    // =========================
-    // GET → 사이트
-    // =========================
+    // ========================================
+    // GET → 정적 파일
+    // ========================================
     if (request.method === "GET") {
       return env.ASSETS.fetch(request);
     }
 
-    return new Response("Method Not Allowed", {
-      status: 405,
-      headers: corsHeaders
-    });
+    return new Response(
+      "Method Not Allowed",
+      {
+        status: 405,
+        headers: corsHeaders
+      }
+    );
   }
 };
