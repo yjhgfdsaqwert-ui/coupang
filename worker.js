@@ -51,7 +51,7 @@ export default {
         // Discord 메시지
         const message = {
           content:
-`**새로운 대리구매 신청**
+`**대리구매 신청**
 
 **이름**
 ${data.name}
@@ -154,9 +154,7 @@ ${data.code}`
         // Discord 메시지
         const message = {
           content:
-`**새로운 문의**
-
-**문의 내용**
+`**문의**
 ${data.inquiry}`
         };
 
