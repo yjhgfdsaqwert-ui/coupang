@@ -24,30 +24,14 @@ const DISCORD_INTENTS =
 ========================================================= */
 
 export default {
+
+  /*
+   * 일반 HTTP 요청
+   */
   async fetch(request, env) {
-    const url = new URL(request.url);
 
-    /*
-     * 봇 시작
-     *
-     * https://YOUR-WORKER/start
-     */
-    if (
-      request.method === "GET" &&
-      url.pathname === "/start"
-    ) {
-      const id = env.DISCORD_BOT.idFromName("main");
-
-      const stub =
-        env.DISCORD_BOT.get(id);
-
-      const response =
-        await stub.fetch(
-          "https://discord-bot/start"
-        );
-
-      return response;
-    }
+    const url =
+      new URL(request.url);
 
 
     /*
@@ -57,22 +41,83 @@ export default {
       request.method === "GET" &&
       url.pathname === "/"
     ) {
+
       return new Response(
         JSON.stringify(
           {
             ok: true,
             service: "Discord AI Bot",
-            model: GEMINI_MODEL
+            model: GEMINI_MODEL,
+            automatic: true
           },
           null,
           2
         ),
         {
           headers: {
-            "Content-Type": "application/json; charset=utf-8"
+            "Content-Type":
+              "application/json; charset=utf-8"
           }
         }
       );
+    }
+
+
+    /*
+     * 수동 시작용
+     *
+     * 이제 정상적인 경우에는
+     * 직접 호출할 필요가 없다.
+     */
+    if (
+      request.method === "GET" &&
+      url.pathname === "/start"
+    ) {
+
+      await startBot(env);
+
+      return new Response(
+        JSON.stringify(
+          {
+            ok: true,
+            message:
+              "Discord AI Bot 시작 요청 완료"
+          },
+          null,
+          2
+        ),
+        {
+          headers: {
+            "Content-Type":
+              "application/json; charset=utf-8"
+          }
+        }
+      );
+    }
+
+
+    /*
+     * 상태 확인
+     */
+    if (
+      request.method === "GET" &&
+      url.pathname === "/status"
+    ) {
+
+      const id =
+        env.DISCORD_BOT.idFromName("main");
+
+      const stub =
+        env.DISCORD_BOT.get(id);
+
+
+      const response =
+        await stub.fetch(
+          "https://discord-bot/status"
+        );
+
+
+      return response;
     }
 
 
@@ -82,8 +127,46 @@ export default {
         status: 404
       }
     );
+  },
+
+
+  /*
+   * =======================================================
+   * Cron
+   *
+   * 1분마다 실행해서 Discord Gateway가 살아있는지 확인한다.
+   * =======================================================
+   */
+  async scheduled(event, env) {
+
+    console.log(
+      "[Cron] Discord Bot 상태 확인"
+    );
+
+
+    await startBot(env);
   }
 };
+
+
+/* =========================================================
+   Bot 시작
+========================================================= */
+
+async function startBot(env) {
+
+  const id =
+    env.DISCORD_BOT.idFromName("main");
+
+
+  const stub =
+    env.DISCORD_BOT.get(id);
+
+
+  await stub.fetch(
+    "https://discord-bot/start"
+  );
+}
 
 
 /* =========================================================
@@ -93,13 +176,17 @@ export default {
 export class DiscordBot extends DurableObject {
 
   constructor(ctx, env) {
+
     super(ctx, env);
 
     this.ctx = ctx;
     this.env = env;
 
     this.gateway = null;
+
     this.heartbeatTimer = null;
+    this.heartbeatStartTimer = null;
+
     this.reconnectTimer = null;
     this.proactiveReconnectTimer = null;
 
@@ -116,17 +203,28 @@ export class DiscordBot extends DurableObject {
   ======================================================= */
 
   async fetch(request) {
-    const url = new URL(request.url);
 
-    if (url.pathname === "/start") {
+    const url =
+      new URL(request.url);
+
+
+    /*
+     * 자동 시작 / 재확인
+     */
+    if (
+      url.pathname === "/start"
+    ) {
 
       await this.startGateway();
 
+
       return new Response(
-        JSON.stringify({
-          ok: true,
-          message: "Discord Gateway 시작 요청 완료"
-        }),
+        JSON.stringify(
+          {
+            ok: true,
+            connected: this.connected
+          }
+        ),
         {
           headers: {
             "Content-Type":
@@ -137,13 +235,26 @@ export class DiscordBot extends DurableObject {
     }
 
 
-    if (url.pathname === "/status") {
+    /*
+     * 상태
+     */
+    if (
+      url.pathname === "/status"
+    ) {
 
       return new Response(
         JSON.stringify(
           {
-            connected: this.connected,
-            sessionId: this.sessionId
+            connected:
+              this.connected,
+
+            gateway:
+              this.gateway
+                ? this.gateway.readyState
+                : null,
+
+            sessionId:
+              this.sessionId
           },
           null,
           2
@@ -168,42 +279,85 @@ export class DiscordBot extends DurableObject {
 
 
   /* =======================================================
-     Discord Gateway 시작
+     Gateway 시작
   ======================================================= */
 
   async startGateway() {
 
-    if (this.starting) {
+    /*
+     * 이미 연결되어 있으면 아무것도 하지 않는다.
+     */
+    if (
+      this.gateway &&
+      this.gateway.readyState ===
+        WebSocket.OPEN &&
+      this.connected
+    ) {
+
+      console.log(
+        "[Discord] Gateway 이미 연결됨"
+      );
+
       return;
     }
 
-    if (
-      this.gateway &&
-      this.connected
-    ) {
+
+    /*
+     * 이미 연결 작업 중이면 중복 실행 방지
+     */
+    if (this.starting) {
+
       return;
     }
+
 
     this.starting = true;
 
-    this.clearTimers();
 
     try {
+
+      this.clearReconnectTimers();
+
 
       console.log(
         "[Discord] Gateway 연결 시작"
       );
 
+
+      /*
+       * 기존 연결이 이상하게 남아있으면 닫는다.
+       */
+      if (this.gateway) {
+
+        try {
+          this.gateway.close();
+        } catch {}
+      }
+
+
+      this.gateway = null;
+      this.connected = false;
+
+
+      /*
+       * Discord Gateway 연결
+       */
       const ws =
         new WebSocket(
           DISCORD_GATEWAY
         );
 
+
       this.gateway = ws;
 
+
+      /*
+       * WebSocket OPEN
+       */
       ws.addEventListener(
         "open",
         () => {
+
           console.log(
             "[Discord] WebSocket 연결됨"
           );
@@ -211,6 +365,9 @@ export class DiscordBot extends DurableObject {
       );
 
 
+      /*
+       * 메시지 수신
+       */
       ws.addEventListener(
         "message",
         (event) => {
@@ -219,8 +376,9 @@ export class DiscordBot extends DurableObject {
             event.data
           ).catch(
             (error) => {
+
               console.error(
-                "[Discord] 메시지 처리 오류:",
+                "[Discord] Gateway 메시지 처리 오류:",
                 error
               );
             }
@@ -229,17 +387,22 @@ export class DiscordBot extends DurableObject {
       );
 
 
+      /*
+       * 연결 종료
+       */
       ws.addEventListener(
         "close",
         (event) => {
 
           console.log(
-            "[Discord] Gateway 연결 종료:",
+            "[Discord] Gateway 종료:",
             event.code,
             event.reason
           );
 
+
           this.connected = false;
+
           this.gateway = null;
 
           this.clearHeartbeat();
@@ -249,6 +412,9 @@ export class DiscordBot extends DurableObject {
       );
 
 
+      /*
+       * 오류
+       */
       ws.addEventListener(
         "error",
         (error) => {
@@ -260,6 +426,7 @@ export class DiscordBot extends DurableObject {
         }
       );
 
+
     } catch (error) {
 
       console.error(
@@ -267,7 +434,9 @@ export class DiscordBot extends DurableObject {
         error
       );
 
+
       this.scheduleReconnect();
+
 
     } finally {
 
@@ -277,22 +446,24 @@ export class DiscordBot extends DurableObject {
 
 
   /* =======================================================
-     Gateway 메시지 처리
+     Gateway 메시지
   ======================================================= */
 
   async handleGatewayMessage(rawData) {
 
     let packet;
 
+
     try {
 
       packet =
         JSON.parse(rawData);
 
-    } catch {
+    } catch (error) {
 
       console.error(
-        "[Discord] JSON 파싱 실패"
+        "[Discord] JSON 파싱 실패:",
+        error
       );
 
       return;
@@ -308,17 +479,22 @@ export class DiscordBot extends DurableObject {
 
 
     /*
-     * Sequence
+     * Sequence 저장
      */
+    if (
+      s !== null &&
+      s !== undefined
+    ) {
 
-    if (s !== null && s !== undefined) {
       this.sequence = s;
     }
 
 
     /*
+     * =====================================================
+     * HELLO
      * Opcode 10
-     * Hello
+     * =====================================================
      */
 
     if (op === 10) {
@@ -327,22 +503,28 @@ export class DiscordBot extends DurableObject {
         "[Discord] Hello 수신"
       );
 
-      const heartbeatInterval =
+
+      const interval =
         d.heartbeat_interval;
 
+
       this.startHeartbeat(
-        heartbeatInterval
+        interval
       );
 
+
       this.identify();
+
 
       return;
     }
 
 
     /*
+     * =====================================================
+     * HEARTBEAT ACK
      * Opcode 11
-     * Heartbeat ACK
+     * =====================================================
      */
 
     if (op === 11) {
@@ -352,8 +534,10 @@ export class DiscordBot extends DurableObject {
 
 
     /*
+     * =====================================================
+     * HEARTBEAT REQUEST
      * Opcode 1
-     * Heartbeat 요청
+     * =====================================================
      */
 
     if (op === 1) {
@@ -365,25 +549,31 @@ export class DiscordBot extends DurableObject {
 
 
     /*
+     * =====================================================
+     * RECONNECT
      * Opcode 7
-     * Reconnect
+     * =====================================================
      */
 
     if (op === 7) {
 
       console.log(
-        "[Discord] Discord가 재연결 요청"
+        "[Discord] Discord가 재연결을 요청함"
       );
 
+
       this.reconnect();
+
 
       return;
     }
 
 
     /*
+     * =====================================================
+     * INVALID SESSION
      * Opcode 9
-     * Invalid Session
+     * =====================================================
      */
 
     if (op === 9) {
@@ -392,23 +582,30 @@ export class DiscordBot extends DurableObject {
         "[Discord] Invalid Session"
       );
 
+
       this.sessionId = null;
       this.sequence = null;
 
+
       setTimeout(
         () => {
+
           this.reconnect();
+
         },
         5000
       );
+
 
       return;
     }
 
 
     /*
+     * =====================================================
+     * DISPATCH
      * Opcode 0
-     * Dispatch
+     * =====================================================
      */
 
     if (op === 0) {
@@ -424,24 +621,34 @@ export class DiscordBot extends DurableObject {
 
 
   /* =======================================================
-     Dispatch 처리
+     Dispatch
   ======================================================= */
 
-  async handleDispatch(eventName, data) {
+  async handleDispatch(
+    eventName,
+    data
+  ) {
 
     /*
      * READY
      */
-
-    if (eventName === "READY") {
+    if (
+      eventName === "READY"
+    ) {
 
       this.connected = true;
+
 
       this.sessionId =
         data.session_id;
 
+
       console.log(
-        "[Discord] 로그인 완료"
+        "[Discord] ======================="
+      );
+
+      console.log(
+        "[Discord] 로그인 성공"
       );
 
       console.log(
@@ -450,31 +657,36 @@ export class DiscordBot extends DurableObject {
       );
 
       console.log(
-        "[Discord] session_id:",
+        "[Discord] Session:",
         this.sessionId
       );
 
-      /*
-       * Cloudflare Durable Object의
-       * outbound WebSocket은 최대 수명 제한이 있으므로
-       * 미리 재연결한다.
-       */
+      console.log(
+        "[Discord] ======================="
+      );
 
+
+      /*
+       * 장시간 연결을 위한 주기적 재연결
+       */
       this.scheduleProactiveReconnect();
+
 
       return;
     }
 
 
     /*
-     * MESSAGE_CREATE
+     * 일반 메시지
      */
-
-    if (eventName === "MESSAGE_CREATE") {
+    if (
+      eventName === "MESSAGE_CREATE"
+    ) {
 
       await this.handleDiscordMessage(
         data
       );
+
 
       return;
     }
@@ -482,12 +694,21 @@ export class DiscordBot extends DurableObject {
 
 
   /* =======================================================
-     Discord Identify
+     Identify
   ======================================================= */
 
   identify() {
 
-    if (!this.gateway) {
+    if (
+      !this.gateway ||
+      this.gateway.readyState !==
+        WebSocket.OPEN
+    ) {
+
+      console.error(
+        "[Discord] Identify 실패: WebSocket이 열려있지 않음"
+      );
+
       return;
     }
 
@@ -515,9 +736,14 @@ export class DiscordBot extends DurableObject {
         token,
 
         properties: {
+
           os: "linux",
-          browser: "cloudflare",
-          device: "cloudflare"
+
+          browser:
+            "cloudflare",
+
+          device:
+            "cloudflare"
         },
 
         intents:
@@ -526,14 +752,25 @@ export class DiscordBot extends DurableObject {
     };
 
 
-    this.gateway.send(
-      JSON.stringify(packet)
-    );
+    try {
+
+      this.gateway.send(
+        JSON.stringify(packet)
+      );
 
 
-    console.log(
-      "[Discord] Identify 전송"
-    );
+      console.log(
+        "[Discord] Identify 전송 완료"
+      );
+
+
+    } catch (error) {
+
+      console.error(
+        "[Discord] Identify 전송 실패:",
+        error
+      );
+    }
   }
 
 
@@ -547,30 +784,33 @@ export class DiscordBot extends DurableObject {
 
 
     /*
-     * Discord 권장 방식:
-     * 첫 heartbeat를 약간 랜덤하게 보낸다.
+     * Discord 권장 방식에 맞춰
+     * 첫 Heartbeat를 랜덤한 시점에 전송
      */
-
     const firstDelay =
       Math.random() * interval;
 
 
-    setTimeout(
-      () => {
+    this.heartbeatStartTimer =
+      setTimeout(
+        () => {
 
-        this.sendHeartbeat();
+          this.sendHeartbeat();
 
-        this.heartbeatTimer =
-          setInterval(
-            () => {
-              this.sendHeartbeat();
-            },
-            interval
-          );
 
-      },
-      firstDelay
-    );
+          this.heartbeatTimer =
+            setInterval(
+              () => {
+
+                this.sendHeartbeat();
+
+              },
+              interval
+            );
+
+        },
+        firstDelay
+      );
   }
 
 
@@ -578,8 +818,10 @@ export class DiscordBot extends DurableObject {
 
     if (
       !this.gateway ||
-      this.gateway.readyState !== WebSocket.OPEN
+      this.gateway.readyState !==
+        WebSocket.OPEN
     ) {
+
       return;
     }
 
@@ -598,10 +840,11 @@ export class DiscordBot extends DurableObject {
         JSON.stringify(packet)
       );
 
+
     } catch (error) {
 
       console.error(
-        "[Discord] Heartbeat 전송 실패:",
+        "[Discord] Heartbeat 실패:",
         error
       );
     }
@@ -609,18 +852,20 @@ export class DiscordBot extends DurableObject {
 
 
   /* =======================================================
-     Discord 메시지 처리
+     Discord 메시지
   ======================================================= */
 
-  async handleDiscordMessage(message) {
+  async handleDiscordMessage(
+    message
+  ) {
 
     /*
-     * 봇 메시지는 무시
+     * 봇 메시지 무시
      */
-
     if (
       message.author?.bot
     ) {
+
       return;
     }
 
@@ -628,7 +873,6 @@ export class DiscordBot extends DurableObject {
     /*
      * 허용 채널
      */
-
     const devChannel =
       this.env.AI_coupang_discord_dev_channel;
 
@@ -640,10 +884,14 @@ export class DiscordBot extends DurableObject {
       message.channel_id;
 
 
+    /*
+     * 지정된 두 채널 외에는 무시
+     */
     if (
       channelId !== devChannel &&
       channelId !== userChannel
     ) {
+
       return;
     }
 
@@ -653,20 +901,20 @@ export class DiscordBot extends DurableObject {
 
 
     if (!content) {
+
       return;
     }
 
 
     console.log(
-      "[Discord] 메시지:",
+      "[Discord] 질문:",
       content
     );
 
 
     /*
-     * AI 응답 생성
+     * Gemini
      */
-
     const answer =
       await this.askGemini(
         content
@@ -674,9 +922,8 @@ export class DiscordBot extends DurableObject {
 
 
     /*
-     * Discord에 답변
+     * Discord 답변
      */
-
     await this.sendDiscordMessage(
       channelId,
       answer
@@ -688,7 +935,9 @@ export class DiscordBot extends DurableObject {
      Gemini API
   ======================================================= */
 
-  async askGemini(question) {
+  async askGemini(
+    question
+  ) {
 
     const apiKey =
       this.env.AI_coupang_api;
@@ -700,7 +949,10 @@ export class DiscordBot extends DurableObject {
         "[Gemini] AI_coupang_api가 없습니다."
       );
 
-      return "AI API 키가 설정되지 않았습니다.";
+
+      return (
+        "AI API 키가 설정되지 않았습니다."
+      );
     }
 
 
@@ -716,9 +968,10 @@ export class DiscordBot extends DurableObject {
 
           {
             text:
-              "너는 Discord에서 사용되는 AI 비서다. " +
-              "사용자의 질문에 한국어로 자연스럽고 정확하게 답변한다. " +
-              "불필요하게 장황하게 설명하지 말고 질문에 직접 답한다."
+              "너는 Discord AI 비서다. " +
+              "사용자의 질문에 한국어로 정확하고 자연스럽게 답변한다. " +
+              "불필요하게 장황하게 말하지 않는다. " +
+              "사용자가 코드를 요청하면 복사해서 사용할 수 있는 완전한 코드를 제공한다."
           }
 
         ]
@@ -734,7 +987,8 @@ export class DiscordBot extends DurableObject {
           parts: [
 
             {
-              text: question
+              text:
+                question
             }
 
           ]
@@ -780,7 +1034,12 @@ export class DiscordBot extends DurableObject {
         await response.json();
 
 
-      if (!response.ok) {
+      /*
+       * API 오류
+       */
+      if (
+        !response.ok
+      ) {
 
         console.error(
           "[Gemini] API 오류:",
@@ -788,18 +1047,21 @@ export class DiscordBot extends DurableObject {
           result
         );
 
+
         return (
-          "AI API 오류가 발생했습니다.\n" +
+          "Gemini API 오류가 발생했습니다.\n" +
           `HTTP ${response.status}`
         );
       }
 
 
+      /*
+       * 답변 추출
+       */
       const parts =
         result
           ?.candidates?.[0]
-          ?.content
-          ?.parts;
+          ?.content?.parts;
 
 
       if (
@@ -811,14 +1073,18 @@ export class DiscordBot extends DurableObject {
           result
         );
 
-        return "AI가 답변을 생성하지 못했습니다.";
+
+        return (
+          "Gemini가 답변을 생성하지 못했습니다."
+        );
       }
 
 
       const answer =
         parts
           .map(
-            part => part.text || ""
+            part =>
+              part.text || ""
           )
           .join("")
           .trim();
@@ -826,7 +1092,9 @@ export class DiscordBot extends DurableObject {
 
       if (!answer) {
 
-        return "AI가 빈 답변을 반환했습니다.";
+        return (
+          "Gemini가 빈 답변을 반환했습니다."
+        );
       }
 
 
@@ -840,8 +1108,9 @@ export class DiscordBot extends DurableObject {
         error
       );
 
+
       return (
-        "AI API 요청 중 오류가 발생했습니다."
+        "Gemini API 요청 중 오류가 발생했습니다."
       );
     }
   }
@@ -857,15 +1126,14 @@ export class DiscordBot extends DurableObject {
   ) {
 
     if (!content) {
+
       return;
     }
 
 
     /*
-     * Discord 메시지 최대 길이 2000자.
-     * 길면 여러 메시지로 나눈다.
+     * Discord 메시지 길이 제한 대응
      */
-
     const chunks =
       this.splitMessage(
         content,
@@ -873,41 +1141,60 @@ export class DiscordBot extends DurableObject {
       );
 
 
-    for (const chunk of chunks) {
+    for (
+      const chunk of chunks
+    ) {
 
-      const response =
-        await fetch(
-          `${DISCORD_API}/channels/${channelId}/messages`,
-          {
+      try {
 
-            method: "POST",
+        const response =
+          await fetch(
+            `${DISCORD_API}/channels/${channelId}/messages`,
+            {
 
-            headers: {
+              method: "POST",
 
-              "Authorization":
-                `Bot ${this.env.AI_coupang_discord}`,
+              headers: {
 
-              "Content-Type":
-                "application/json"
-            },
+                "Authorization":
+                  `Bot ${this.env.AI_coupang_discord}`,
 
-            body:
-              JSON.stringify({
-                content: chunk
-              })
-          }
-        );
+                "Content-Type":
+                  "application/json"
+              },
+
+              body:
+                JSON.stringify(
+                  {
+                    content:
+                      chunk
+                  }
+                )
+            }
+          );
 
 
-      if (!response.ok) {
+        if (
+          !response.ok
+        ) {
 
-        const errorText =
-          await response.text();
+          const errorText =
+            await response.text();
+
+
+          console.error(
+            "[Discord] 메시지 전송 실패:",
+            response.status,
+            errorText
+          );
+        }
+
+
+      } catch (error) {
 
         console.error(
-          "[Discord] 메시지 전송 실패:",
-          response.status,
-          errorText
+          "[Discord] 메시지 전송 요청 실패:",
+          error
         );
       }
     }
@@ -924,8 +1211,10 @@ export class DiscordBot extends DurableObject {
   ) {
 
     if (
-      text.length <= maxLength
+      text.length <=
+      maxLength
     ) {
+
       return [text];
     }
 
@@ -939,7 +1228,9 @@ export class DiscordBot extends DurableObject {
       text.split("\n");
 
 
-    for (const line of lines) {
+    for (
+      const line of lines
+    ) {
 
       if (
         current.length +
@@ -949,8 +1240,13 @@ export class DiscordBot extends DurableObject {
       ) {
 
         current +=
-          (current ? "\n" : "") +
+          (
+            current
+              ? "\n"
+              : ""
+          ) +
           line;
+
 
       } else {
 
@@ -965,7 +1261,6 @@ export class DiscordBot extends DurableObject {
         /*
          * 한 줄 자체가 너무 긴 경우
          */
-
         if (
           line.length >
           maxLength
@@ -985,11 +1280,14 @@ export class DiscordBot extends DurableObject {
             );
           }
 
+
           current = "";
+
 
         } else {
 
-          current = line;
+          current =
+            line;
         }
       }
     }
@@ -1008,14 +1306,15 @@ export class DiscordBot extends DurableObject {
 
 
   /* =======================================================
-     재연결
+     자동 재연결
   ======================================================= */
 
   reconnect() {
 
-    this.clearTimers();
+    this.clearReconnectTimers();
 
     this.connected = false;
+
 
     if (this.gateway) {
 
@@ -1028,6 +1327,7 @@ export class DiscordBot extends DurableObject {
 
 
     this.gateway = null;
+
 
     setTimeout(
       () => {
@@ -1045,8 +1345,14 @@ export class DiscordBot extends DurableObject {
     if (
       this.reconnectTimer
     ) {
+
       return;
     }
+
+
+    console.log(
+      "[Discord] 5초 후 자동 재연결"
+    );
 
 
     this.reconnectTimer =
@@ -1056,6 +1362,7 @@ export class DiscordBot extends DurableObject {
           this.reconnectTimer =
             null;
 
+
           this.startGateway();
 
         },
@@ -1064,30 +1371,34 @@ export class DiscordBot extends DurableObject {
   }
 
 
-  /*
-   * Cloudflare Durable Object의
-   * outbound WebSocket은 장시간 연결에 제한이 있으므로
-   * 약 9분마다 미리 재연결한다.
-   */
+  /* =======================================================
+     주기적 재연결
+  ======================================================= */
 
   scheduleProactiveReconnect() {
 
     if (
       this.proactiveReconnectTimer
     ) {
+
       clearTimeout(
         this.proactiveReconnectTimer
       );
     }
 
 
+    /*
+     * 장시간 연결 안정성을 위해
+     * 9분마다 Gateway를 새로 연결한다.
+     */
     this.proactiveReconnectTimer =
       setTimeout(
         () => {
 
           console.log(
-            "[Discord] 주기적 Gateway 재연결"
+            "[Discord] 자동 주기 재연결"
           );
+
 
           this.reconnect();
 
@@ -1098,10 +1409,24 @@ export class DiscordBot extends DurableObject {
 
 
   /* =======================================================
-     타이머 정리
+     Heartbeat 정리
   ======================================================= */
 
   clearHeartbeat() {
+
+    if (
+      this.heartbeatStartTimer
+    ) {
+
+      clearTimeout(
+        this.heartbeatStartTimer
+      );
+
+
+      this.heartbeatStartTimer =
+        null;
+    }
+
 
     if (
       this.heartbeatTimer
@@ -1111,16 +1436,18 @@ export class DiscordBot extends DurableObject {
         this.heartbeatTimer
       );
 
+
       this.heartbeatTimer =
         null;
     }
   }
 
 
-  clearTimers() {
+  /* =======================================================
+     재연결 타이머 정리
+  ======================================================= */
 
-    this.clearHeartbeat();
-
+  clearReconnectTimers() {
 
     if (
       this.reconnectTimer
@@ -1129,6 +1456,7 @@ export class DiscordBot extends DurableObject {
       clearTimeout(
         this.reconnectTimer
       );
+
 
       this.reconnectTimer =
         null;
@@ -1142,6 +1470,7 @@ export class DiscordBot extends DurableObject {
       clearTimeout(
         this.proactiveReconnectTimer
       );
+
 
       this.proactiveReconnectTimer =
         null;
