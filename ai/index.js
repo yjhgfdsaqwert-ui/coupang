@@ -17,11 +17,6 @@ export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // AI 서버 상태 확인
-    if (url.pathname === "/") {
-      return new Response("AI server is running.");
-    }
-
     // Discord Gateway 연결 시작
     if (url.pathname === "/start") {
       try {
