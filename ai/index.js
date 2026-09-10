@@ -52,109 +52,21 @@ const SYSTEM_INSTRUCTION = `
 
 홈페이지 url:https://coupang.yjh20130103.workers.dev/
 
-참고자료:<strong>이용 안내</strong>
-                        <small>수수료 및 신청 전 주의사항</small>
-                    </span>
-                    <span class="chevron">⌄</span>
-                </summary>
+참고자료:
+해외배송 안됨
 
-                <div class="notice-content">
-                    <section>
-                        <h2 style="font-size: 32px; font-weight: 900; text-align: center;">해외배송 안됩니다</h2>
+수수료
+1만원 미만 무료
+1만원 이상 ~ 5만원 미만 = 1만원
+5만원 이상 ~ 10만원 미만 = 2만원
+10만원 이상 ~ 15만원 미만 = 3만원
+15만원 이상 ~ 20만원 미만 = 4만원
+20만원 이상 ~ 25만원 미만 = 5만원
+25만원 이상 ~ 30만원 미만 = 6만원
 
-                        <h2>수수료</h2>
-                        <p>디스코드로 문의 바랍니다</p>
-                        <p>
-                            <a href="https://discord.gg/Zx6Rfhcvan" target="_blank" rel="noopener">
-                                discord.gg/Zx6Rfhcvan
-                            </a>
-                        </p>
-
-                        <ul class="fee-list">
-                            <li><span>1만원 미만</span><b>무료</b></li>
-                            <li><span>1만원 이상 ~ 5만원 미만</span><b>1만원</b></li>
-                            <li><span>5만원 이상 ~ 10만원 미만</span><b>2만원</b></li>
-                            <li><span>10만원 이상 ~ 15만원 미만</span><b>3만원</b></li>
-                            <li><span>15만원 이상 ~ 20만원 미만</span><b>4만원</b></li>
-                            <li><span>20만원 이상 ~ 25만원 미만</span><b>5만원</b></li>
-                            <li><span>25만원 이상 ~ 30만원 미만</span><b>6만원</b></li>
-                        </ul>
-
-                        <p class="muted">이 이상은 추후에 추가하도록 하겠습니다.</p>
-                    </section>
-
-                    <section>
-                        <h2>주의사항</h2>
-
-                        <p>상품 링크 입력란에는 쿠팡의 상품 URL을 넣어주셔야 합니다.</p>
-                        <p>코드란에는 편의점에서 구매할 수 있는 쿠팡 기프트카드 코드를 넣어주셔야 합니다.</p>
-
-                        <div class="examples">
-                            <div>
-                                <span>상품가격</span>
-                                <b>5,000원</b>
-                                <em>→</em>
-                                <b>기프트카드 1만원</b>
-                            </div>
-
-                            <div>
-                                <span>상품가격</span>
-                                <b>3만 5천원</b>
-                                <em>→</em>
-                                <b>기프트카드 5만원</b>
-                            </div>
-
-                            <div>
-                                <span>상품가격</span>
-                                <b>7만 5천원</b>
-                                <em>→</em>
-                                <b>기프트카드 10만원</b>
-                            </div>
-
-                            <div>
-                                <span>상품가격</span>
-                                <b>13만 5천원</b>
-                                <em>→</em>
-                                <b>기프트카드 17만원</b>
-                            </div>
-                        </div>
-
-                        <p>
-                            상품 가격이 기프트카드 가격을 넘어갈 때는 아래 형식으로 작성해주시기 바랍니다.
-                        </p>
-
-                        <div class="code-example">
-                            <div>기프트 카드 1: ~~~~~~~ <span>(10만원)</span></div>
-                            <div>기프트 카드 2: ~~~~~~~ <span>(7만원)</span></div>
-                        </div>
-                    </section>
-                </div>
-            </details>
-
-            <button
-                class="submit-button contact-button"
-                id="contactButton"
-                type="button"
-            >
-                <span class="button-label">문의</span>
-                <span class="button-arrow">→</span>
-            </button>
-
-            <button
-                class="submit-button"
-                id="submitButton"
-                type="button"
-            >
-                <span class="button-label">신청하기</span>
-                <span class="button-arrow">→</span>
-            </button>
-
-            <p class="secure-note">
-                입력하신 정보는 신청 접수를 위해서만 전송됩니다.
-            </p>
-        </section>
-    </main>
-
+주의사항
+상품 링크 입력란에는 쿠팡의 상품 URL을 넣어주셔야 합니다.
+코드란에는 편의점에서 구매할 수 있는 쿠팡 기프트카드 코드를 넣어주셔야 합니다.
 `;
 
 
