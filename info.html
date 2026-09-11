@@ -1,4 +1,5 @@
 <!DOCTYPE html>
+
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
@@ -16,112 +17,115 @@
             <p>문의하실 내용을 입력해주세요.</p>
         </header>
 
-        <section class="form-card">
-            <div class="field-card inquiry-field">
-                <label for="inquiry">
-                    문의 내용
-                </label>
+```
+    <section class="form-card">
+        <div class="field-card inquiry-field">
+            <label for="inquiry">
+                문의 내용
+            </label>
 
-                <textarea
-                    id="inquiry"
-                    rows="8"
-                    placeholder="문의하실 내용을 입력하세요"
-                ></textarea>
-            </div>
+            <textarea
+                id="inquiry"
+                rows="8"
+                placeholder="문의하실 내용을 입력하세요"
+            ></textarea>
+        </div>
 
-            <button
-                class="submit-button"
-                id="backButton"
-                type="button"
-            >
-                <span class="button-label">대리구매로 돌아가기</span>
-                <span class="button-arrow">→</span>
-            </button>
+        <button
+            class="submit-button"
+            id="backButton"
+            type="button"
+        >
+            <span class="button-label">대리구매로 돌아가기</span>
+            <span class="button-arrow">→</span>
+        </button>
 
-            <button
-                class="submit-button"
-                id="inquiryButton"
-                type="button"
-            >
-                <span class="button-label">문의 접수</span>
-                <span class="button-arrow">→</span>
-            </button>
+        <button
+            class="submit-button"
+            id="inquiryButton"
+            type="button"
+        >
+            <span class="button-label">문의 접수</span>
+            <span class="button-arrow">→</span>
+        </button>
 
-            <p class="secure-note">
-                입력하신 문의 내용은 문의 접수를 위해서만 전송됩니다.
-            </p>
-        </section>
-    </main>
+        <p class="secure-note">
+            입력하신 문의 내용은 문의 접수를 위해서만 전송됩니다.
+        </p>
+    </section>
+</main>
 
-    <script>
-        const WORKER_URL =
-            "https://coupang.yjh20130103.workers.dev/api/inquiry";
+<script>
+    const WORKER_URL =
+        "https://coupang-api-server.yjh20130103.workers.dev/api/inquiry";
 
-        // 대리구매 페이지로 돌아가기
-        document.getElementById("backButton").addEventListener("click", function () {
-            window.location.href = "index.html";
-        });
+    // 대리구매 페이지로 돌아가기
+    document.getElementById("backButton").addEventListener("click", function () {
+        window.location.href = "index.html";
+    });
 
-        // 문의 접수
-        document.getElementById("inquiryButton").addEventListener("click", async function () {
-            const inquiry =
-                document.getElementById("inquiry").value.trim();
+    // 문의 접수
+    document.getElementById("inquiryButton").addEventListener("click", async function () {
+        const inquiry =
+            document.getElementById("inquiry").value.trim();
 
-            if (!inquiry) {
-                alert("문의 내용을 입력해주세요.");
-                return;
+        if (!inquiry) {
+            alert("문의 내용을 입력해주세요.");
+            return;
+        }
+
+        const button =
+            document.getElementById("inquiryButton");
+
+        button.disabled = true;
+        button.classList.add("loading");
+
+        button.querySelector(".button-label").textContent =
+            "문의 전송 중...";
+
+        button.querySelector(".button-arrow").textContent =
+            "···";
+
+        try {
+            const response = await fetch(WORKER_URL, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    inquiry: inquiry
+                })
+            });
+
+            if (!response.ok) {
+                throw new Error("전송 실패");
             }
 
-            const button =
-                document.getElementById("inquiryButton");
+            alert("문의가 정상적으로 접수되었습니다.");
 
-            button.disabled = true;
-            button.classList.add("loading");
+            document.getElementById("inquiry").value = "";
+
+        } catch (error) {
+            console.error(error);
+
+            alert(
+                "문의 전송에 실패했습니다.\n" +
+                "잠시 후 다시 시도해주세요."
+            );
+
+        } finally {
+            button.disabled = false;
+            button.classList.remove("loading");
 
             button.querySelector(".button-label").textContent =
-                "문의 전송 중...";
+                "문의 접수";
 
             button.querySelector(".button-arrow").textContent =
-                "···";
+                "→";
+        }
+    });
+</script>
+```
 
-            try {
-                const response = await fetch(WORKER_URL, {
-                    method: "POST",
-                    headers: {
-                        "Content-Type": "application/json"
-                    },
-                    body: JSON.stringify({
-                        inquiry: inquiry
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error("전송 실패");
-                }
-
-                alert("문의가 정상적으로 접수되었습니다.");
-
-                document.getElementById("inquiry").value = "";
-
-            } catch (error) {
-                console.error(error);
-
-                alert(
-                    "문의 전송에 실패했습니다.\n" +
-                    "잠시 후 다시 시도해주세요."
-                );
-
-            } finally {
-                button.disabled = false;
-                button.classList.remove("loading");
-
-                button.querySelector(".button-label").textContent =
-                    "문의 접수";
-
-                button.querySelector(".button-arrow").textContent =
-                    "→";
-            }
-        });
-    </script>
 </body>
 </html>
